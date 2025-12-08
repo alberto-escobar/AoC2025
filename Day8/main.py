@@ -10,8 +10,10 @@ for row in raw_data:
         a.append(int(num))
     data.append(a)
 
-distances = []
 n = len(data)
+
+distances = []
+
 for i in range(n):
     for j in range(i+1, n):
         x1,y1,z1 = data[i]
@@ -21,40 +23,43 @@ for i in range(n):
 
 distances.sort(key=lambda x:x[0])
 
+circuits = {}
 
-sets = {}
 for i in range(n):
-    sets[i] = set([i])
+    circuits[i] = set([i])
 
 connections = 0
-curr = 0
-g = len(sets)
-while connections < 1000: 
-    _, p1, p2 = distances[curr]
-    if p1 not in sets[p2] and p2 not in sets[p1]:
-        merged = sets[p1] | sets[p2]
-        for member in merged:
-            sets[member] = merged
-        g -= 1
+num_of_circuits = len(circuits)
+
+while connections < 1000:
+    _, p1, p2 = distances[connections]
+    if p1 not in circuits[p2] and p2 not in circuits[p1]:
+        new_circuit = circuits[p1].union(circuits[p2])
+        for p in new_circuit:
+            circuits[p] = new_circuit
+        num_of_circuits -= 1
     connections += 1
-    curr += 1
 
-unique_sets_list = [set(fs) for fs in set(frozenset(s) for s in sets.values())]
-unique_sets_list.sort(key=lambda x: -len(x))
+a = set()
+b = []
 
-result = len(unique_sets_list[0]) * len(unique_sets_list[1]) * len(unique_sets_list[2])
-print(result)
+for circuit in circuits.values():
+    if id(circuit) not in a:
+        a.add(id(circuit))
+        b.append(len(circuit))
 
-while True: 
-    _, p1, p2 = distances[curr]
-    if p1 not in sets[p2] and p2 not in sets[p1]:
-        merged = sets[p1] | sets[p2]
-        for member in merged:
-            sets[member] = merged
-        g -= 1
-        if g == 1:
-            x1, _, _ = data[p1]
-            x2, _, _ = data[p2]
-            print(x1*x2)
+b.sort(key=lambda x: -x)
+
+print(b[0]*b[1]*b[2])
+
+while True:
+    _, p1, p2 = distances[connections]
+    if p1 not in circuits[p2] and p2 not in circuits[p1]:
+        new_circuit = circuits[p1].union(circuits[p2])
+        for p in new_circuit:
+            circuits[p] = new_circuit
+        num_of_circuits -= 1
+        if num_of_circuits == 1:
+            print(data[p1][0]*data[p2][0])
             break
-    curr += 1
+    connections += 1
